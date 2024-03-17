@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as scp
+import matplotlib.pyplot as plt
 
 class BayesRLD(object):
     """Object to record degradation data and infer RLD.
@@ -64,6 +65,7 @@ class BayesRLD(object):
         return
     
     def rld_cdf(self, t):
+        # the cumulative distribution function of the residual life distribution
         if len(self.signal_) == 0:
             raise Exception("Please first record a data point before calling rld_cdf().")
         else:
@@ -73,6 +75,7 @@ class BayesRLD(object):
         return scp.stats.norm.cdf(g)
     
     def rld_pdf(self, t):
+        # the probability density function of the residual life distribution
         if len(self.signal_) == 0:
             raise Exception("Please first record a data point before calling rld_pdf().")
         else:
@@ -81,3 +84,21 @@ class BayesRLD(object):
             g = (mu - self.D_) / sig
             g_prime = (2*self.muB_*sig**2 - (mu-self.D_)*(2*self.sigB_**2*t+self.sig_**2)) / (2*sig**3)
         return scp.stats.norm.pdf(g) * g_prime
+    
+    def plot_cdf(self, interval, coeff=5):
+        time = np.linspace(0.1,interval,num=int(coeff*interval))
+        cdf = [self.rld_cdf(t) for t in time]
+        fig, ax = plt.subplots()
+        ax.plot(time, cdf, 'k-')
+        ax.set_xlabel("Time [min]")
+        ax.set_title(f"Residual Life Distribution CDF (update time: {self.timestamps_[-1]} min)")
+        return fig
+    
+    def plot_pdf(self, interval, coeff=5):
+        time = np.linspace(0.1,interval,num=int(coeff*interval))
+        cdf = [self.rld_pdf(t) for t in time]
+        fig, ax = plt.subplots()
+        ax.plot(time, cdf, 'k-')
+        ax.set_xlabel("Time [min]")
+        ax.set_title(f"Residual Life Distribution PDF (update time: {self.timestamps_[-1]} min)")
+        return fig
