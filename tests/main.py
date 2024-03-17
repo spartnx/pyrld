@@ -9,30 +9,27 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     # random number generator
-    seed = 1000
+    seed = 100
     rng = np.random.Generator(np.random.MT19937(seed))
 
     # input degradation model parameters (prior) - take from Gebraeel's PhD thesis (2003)
-    phi = 0.005 # constant in degradation model
-    mu0 = -7.6 # mean of log(theta) (prior) - from Fig. 3.24 in Gebraeel's PhD thesis (2003)
-    sig0 = 5e-2 # standard deviation of log(theta) (prior) - ??
-    mu1 = 0.0037 # mean of beta (prior) - from Fig 3.24 in Gebraeel's PhD thesis (2003)
-    sig1 = 1e-3 # standard deviation of beta (prior) - ??
-    sig = 5e-3 # standard deviation of error terms (dim = 1/minute**.5) - ??
+    phi = 0 # constant in degradation model - from p. 145 of Gebraeel's PhD thesis (2003)
+    mu0 = -7.71508 # mean of log(theta) (prior) - from Table 6.1 p.140 in Gebraeel's PhD thesis (2003)
+    sig0 = 0.56173 # standard deviation of log(theta) (prior) - from Table 6.1 p.140 in Gebraeel's PhD thesis (2003)
+    mu1 = 0.00654 # mean of beta (prior) - from Table 6.1 p.140 in Gebraeel's PhD thesis (2003)
+    sig1 = 0.00248 # standard deviation of beta (prior) - from Table 6.1 p.140 in Gebraeel's PhD thesis (2003)
+    sig = 1e-3 #np.sqrt(0.07721) # standard deviation of error terms (dim = 1/minute**.5) - p/. 146 from Gebraeel's PhD thesis (2003)
     D = 0.03 # threshold for failure detection - from Gebraeel (2007) - from Gebraeel et al. (2007)
 
     # sample theta and beta
     theta = rng.lognormal(mu0, sig0)
-    while theta <= 0:
-        theta = rng.lognormal(mu0, sig0)
-        print(theta)
     beta = rng.normal(mu1, sig1)
     while beta <= sig**2/2:
         beta = rng.normal(mu1, sig1)
 
     # generate synthetic data from sampled theta and beta
     n = 170 # number of degradation signal samples
-    t_offset = 630 # [min]
+    t_offset = 0 # [min]
     dt = 2 # time interval between two data recording events [min]
     time = [dt*k for k in range(n)] # timeline during degradation [min]
     signal = []
