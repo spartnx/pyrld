@@ -102,3 +102,44 @@ class BayesRLD(object):
         ax.set_xlabel("Time [min]")
         ax.set_title(f"Residual Life Distribution PDF (update time: {self.timestamps_[-1]} min)")
         return fig
+    
+    def synthetic_data(self, dt, seed=10, n_extra=20):
+        # initialize random number generator 
+        rng = np.random.Generator(np.random.MT19937(seed))
+        # sample stochastic parameters theta and beta
+        theta = rng.lognormal(self.mu0_, self.sig0_)
+        beta = rng.normal(self.mu1_, self.sig1_)
+        while beta <= self.sig_**2/2:
+            beta = rng.normal(self.mu1_, self.sig1_)
+        # initialize containers
+        time = []
+        signal = []
+        # initialize variables to update
+        t = 0 # time counter
+        n = 0 # sample counter
+        err = 0 # Brownian error
+        run = True
+        # run until failure threshold is reached
+        while run:
+            t = dt*n
+            n += 1
+            err = err + rng.normal(0, self.sig_*np.sqrt(dt)) # synthetic error term - brownian motion
+            s = self.phi_ + theta*np.exp(beta*t)*np.exp(err - self.sig_**2*t/2)
+            signal.append(s)
+            time.append(t)
+            if signal[-1] > self.D_:
+                run = False
+        # run a few more samples
+        for k in range(1,n_extra+1):
+            t = dt*(n + k)
+            err = err + rng.normal(0, self.sig_*np.sqrt(dt)) # synthetic error term - brownian motion
+            s = self.phi_ + theta*np.exp(beta*t)*np.exp(err - self.sig_**2*t/2)
+            signal.append(s)
+            time.append(t)
+        # plot synthetic data (check)
+        fig, ax = plt.subplots()
+        ax.plot(time,signal,"b-")
+        ax.set_xlabel("Time [min]")
+        ax.set_ylabel("Degradation signal")
+        ax.set_title("Synthetic degradation signal data")
+        return time, signal, fig
