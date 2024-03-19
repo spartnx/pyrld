@@ -15,7 +15,7 @@ if __name__ == "__main__":
     sig0 = 0.56172343 # standard deviation of log(theta) (prior) - from Table 6.1 p.140 in Gebraeel's PhD thesis (2003)
     mu1 = 0.046585 # mean of beta (prior) - from Table 6.1 p.140 in Gebraeel's PhD thesis (2003)
     sig1 = 0.0071362 # standard deviation of beta (prior) - from Table 6.1 p.140 in Gebraeel's PhD thesis (2003)
-    D = 0.03 # threshold for failure detection - from Gebraeel (2007) - from Gebraeel et al. (2007)
+    D = 0.03 # threshold for failure detection - from Gebraeel et al. (2007)
     dt = 2 # data recording interval, every dt minutes
 
     # create RLD object
