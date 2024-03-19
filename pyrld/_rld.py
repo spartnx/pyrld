@@ -19,7 +19,8 @@ class BayesRLD(object):
         self.mu1_ = mu1 # mean of beta (prior)
         self.sig1_ = sig1 # standard deviation of beta (prior)
         self.sig_ = sig # standard deviation of error terms
-        self.D_ = D # threshold for failure detection
+        self.D_ = D # threshold for failure detection (used to generate synthetic data)
+        self.logD_ = np.log(D) # logged failure threshold (used to compute RLDs)
 
         # bivariate normal distribution parameters (mean and variance)
         self.muT_ = None # mean of theta (posterior)
@@ -68,21 +69,19 @@ class BayesRLD(object):
         # the cumulative distribution function of the residual life distribution
         if len(self.signal_) == 0:
             raise Exception("Please first record a data point before calling rld_cdf().")
-        else:
-            mu = self.logged_signal_[-1] + self.muB_*t
-            sig = np.sqrt(self.sigB_**2*t**2 + self.sig_**2*t)
-            g = (mu - self.D_) / sig
+        mu = self.logged_signal_[-1] + self.muB_*t
+        sig = np.sqrt(self.sigB_**2*t**2 + self.sig_**2*t)
+        g = (mu - self.logD_) / sig
         return scp.stats.norm.cdf(g)
     
     def rld_pdf(self, t):
         # the probability density function of the residual life distribution
         if len(self.signal_) == 0:
             raise Exception("Please first record a data point before calling rld_pdf().")
-        else:
-            mu = self.logged_signal_[-1] + self.muB_*t
-            sig = np.sqrt(self.sigB_**2*t**2 + self.sig_**2*t)
-            g = (mu - self.D_) / sig
-            g_prime = (2*self.muB_*sig**2 - (mu-self.D_)*(2*self.sigB_**2*t+self.sig_**2)) / (2*sig**3)
+        mu = self.logged_signal_[-1] + self.muB_*t
+        sig = np.sqrt(self.sigB_**2*t**2 + self.sig_**2*t)
+        g = (mu - self.logD_) / sig
+        g_prime = (2*self.muB_*sig**2 - (mu-self.logD_)*(2*self.sigB_**2*t+self.sig_**2)) / (2*sig**3)
         return scp.stats.norm.pdf(g) * g_prime
     
     def plot_cdf(self, interval, coeff=5):
@@ -96,9 +95,9 @@ class BayesRLD(object):
     
     def plot_pdf(self, interval, coeff=5):
         time = np.linspace(0.1,interval,num=int(coeff*interval))
-        cdf = [self.rld_pdf(t) for t in time]
+        pdf = [self.rld_pdf(t) for t in time]
         fig, ax = plt.subplots()
-        ax.plot(time, cdf, 'k-')
+        ax.plot(time, pdf, 'k-')
         ax.set_xlabel("Time [min]")
         ax.set_title(f"Residual Life Distribution PDF (update time: {self.timestamps_[-1]} min)")
         return fig
@@ -119,6 +118,7 @@ class BayesRLD(object):
         n = 0 # sample counter
         err = 0 # Brownian error
         run = True
+        actual_fail_time = None
         # run until failure threshold is reached
         while run:
             t = dt*n
@@ -129,6 +129,7 @@ class BayesRLD(object):
             time.append(t)
             if signal[-1] > self.D_:
                 run = False
+                actual_fail_time = t
         # run a few more samples
         for k in range(1,n_extra+1):
             t = dt*(n + k)
@@ -142,4 +143,15 @@ class BayesRLD(object):
         ax.set_xlabel("Time [min]")
         ax.set_ylabel("Degradation signal")
         ax.set_title("Synthetic degradation signal data")
-        return time, signal, fig
+        return time, signal, actual_fail_time, fig
+    
+    def percentile(self, p=0.5, x0=400):
+        # compute time at specified percentile given current RLD
+        if len(self.signal_) == 0:
+            raise Exception("Please first record a data point before calling rld_pdf().")
+        if p>1 or p<0:
+            raise Exception("Please input a percentile value between 0 and 1.")
+        else:
+            def func(x):
+                return self.rld_cdf(x) - p
+            return scp.optimize.fsolve(func, x0)[0]
