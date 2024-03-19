@@ -22,15 +22,21 @@ if __name__ == "__main__":
     rld = BayesRLD(phi, mu0, sig0, mu1, sig1, sig, D)
 
     # generate synthetic data
-    time, signal, fig = rld.synthetic_data(dt)
+    time, signal, actual_fail_time, fig = rld.synthetic_data(dt, seed=0, n_extra=5)
     n = len(time)
 
     # simulate real-time degradation signal recording
     # first record and plot cdf and pdf
     rld.push(time[0], signal[0])
-    interval = 300 # interval over which to plot cdf and pdf [min]
+    interval = 3000 # interval over which to plot cdf and pdf [min]
     rld.plot_cdf(interval)
     rld.plot_pdf(interval)
+    t_10 = rld.percentile(p=0.1)
+    t_50 = rld.percentile(p=0.5)
+    t_90 = rld.percentile(p=0.9)
+    print(f"t = {time[0]}")
+    print(f"   [10%, 90%] : [{time[0]+round(t_10,3)}, {time[0]+round(t_90,3)}]")
+    print(f"   med : {time[0]+round(t_50, 3)}\n")
 
     # a few more records...
     N = int(n/2)
@@ -39,9 +45,32 @@ if __name__ == "__main__":
 
     # ... one more record with plots
     rld.push(time[N], signal[N])
-    interval = 300 # interval over which to plot cdf and pdf [min]
+    interval = 3000 # interval over which to plot cdf and pdf [min]
     rld.plot_cdf(interval)
     rld.plot_pdf(interval)
+    t_10 = rld.percentile(p=0.1)
+    t_50 = rld.percentile(p=0.5)
+    t_90 = rld.percentile(p=0.9)
+    print(f"t = {time[N]}")
+    print(f"   [10%, 90%] : [{time[N]+round(t_10,3)}, {time[N]+round(t_90,3)}]")
+    print(f"   med : {time[N]+round(t_50, 3)}\n")
+
+    # a few more records...
+    N2 = int(n/4)
+    for i in range(N+1, N+N2):
+        rld.push(time[i], signal[i])
+
+    # ... one more record with plots
+    rld.push(time[N+N2], signal[N+N2])
+    interval = 3000 # interval over which to plot cdf and pdf [min]
+    rld.plot_cdf(interval)
+    rld.plot_pdf(interval)
+    t_10 = rld.percentile(p=0.1)
+    t_50 = rld.percentile(p=0.5)
+    t_90 = rld.percentile(p=0.9)
+    print(f"t = {time[N+N2]}")
+    print(f"   [10%, 90%] : [{time[N+N2]+round(t_10,3)}, {time[N+N2]+round(t_90,3)}]")
+    print(f"   med : {time[N+N2]+round(t_50, 3)}\n")
 
     # Show the plots
     plt.show()
