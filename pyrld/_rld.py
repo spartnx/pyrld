@@ -227,7 +227,7 @@ class BayesRLD(object):
                 return self.rld_cdf(x) - p
             return scp.optimize.fsolve(func, x0)[0]
         
-    def multi_pdf_plots(self, interval=1500):
+    def multi_pdf_plot(self, interval=1500):
         self.ax.legend()
         self.ax.set_xlabel("Time [min]")
         self.ax.set_title(f"Evolution of the Residual Life Distribution PDF")

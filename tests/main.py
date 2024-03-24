@@ -94,7 +94,7 @@ if __name__ == "__main__":
     print(f"   med : {time[N+N2]+round(t_50, 3)}\n")
 
     # Plot several RLDs at different update times
-    rld.multi_pdf_plots(interval=800)
+    rld.multi_pdf_plot(interval=800)
 
     # Show the plots
     plt.show()
