@@ -228,6 +228,11 @@ class BayesRLD(object):
             return scp.optimize.fsolve(func, x0)[0]
         
     def multi_pdf_plot(self, interval=1500):
+        """Overlay several RLD PDFs.
+
+        Inputs:
+            > interval : time interval over which to plot the RLD PDFs
+        """
         self.ax.legend()
         self.ax.set_xlabel("Time [min]")
         self.ax.set_title(f"Evolution of the Residual Life Distribution PDF")
