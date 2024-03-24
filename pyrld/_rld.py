@@ -52,6 +52,9 @@ class BayesRLD(object):
         self.signal_ = []
         self.logged_signal_ = []
         self.logged_signal_diff_ = []
+
+        # Multiple pdf plots
+        self.fig, self.ax = plt.subplots()
         return
     
     def push(self, timestamp, signal):
@@ -152,6 +155,7 @@ class BayesRLD(object):
         ax.plot(time, pdf, 'k-')
         ax.set_xlabel("Time [min]")
         ax.set_title(f"Residual Life Distribution PDF (update time: {self.timestamps_[-1]} min)")
+        self.ax.plot(time, pdf, label=f"Update time = {round(self.timestamps_[-1])}")
         return fig
     
     def synthetic_data(self, dt, seed=10, n_extra=20):
@@ -222,3 +226,10 @@ class BayesRLD(object):
             def func(x):
                 return self.rld_cdf(x) - p
             return scp.optimize.fsolve(func, x0)[0]
+        
+    def multi_pdf_plots(self, interval=1500):
+        self.ax.legend()
+        self.ax.set_xlabel("Time [min]")
+        self.ax.set_title(f"Evolution of the Residual Life Distribution PDF")
+        self.ax.set_xlim((0,interval))
+        return self.fig

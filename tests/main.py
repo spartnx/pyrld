@@ -93,6 +93,9 @@ if __name__ == "__main__":
     print(f"   [10%, 90%] : [{time[N+N2]+round(t_10,3)}, {time[N+N2]+round(t_90,3)}]")
     print(f"   med : {time[N+N2]+round(t_50, 3)}\n")
 
+    # Plot several RLDs at different update times
+    rld.multi_pdf_plots(interval=800)
+
     # Show the plots
     plt.show()
 
