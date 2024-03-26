@@ -158,7 +158,7 @@ class BayesRLD(object):
         self.ax.plot(time, pdf, label=f"Update time = {round(self.timestamps_[-1])}")
         return fig
     
-    def synthetic_data(self, dt, seed=10, n_extra=20):
+    def synthetic_data(self, dt, seed=10, n_extra=20, t_plot=None, xmax=None, ymax=None):
         """Generate synthetic data assuming the increasing exponential model.
         The function stops generating data points when the threshold self.D_ is reached
         plus n_extra additional points.
@@ -202,12 +202,21 @@ class BayesRLD(object):
             s = self.phi_ + theta*np.exp(beta*t)*np.exp(err - self.sig_**2*t/2)
             signal.append(s)
             time.append(t)
+        # "time" index corresponding to t_plot
+        if t_plot != None:
+            idx = int(t_plot/dt)
+        else:
+            idx = -1
         # plot synthetic data (check)
         fig, ax = plt.subplots()
-        ax.plot(time,signal,"b-")
+        ax.plot(time[0:idx],signal[0:idx],"b-")
         ax.set_xlabel("Time [min]")
         ax.set_ylabel("Degradation signal")
         ax.set_title("Synthetic degradation signal data")
+        if xmax != None:
+            ax.set_xlim([0, xmax])
+        if ymax != None:
+            ax.set_ylim([0, ymax])
         return time, signal, actual_fail_time, fig
     
     def percentile(self, p=0.5, x0=400):
@@ -227,14 +236,13 @@ class BayesRLD(object):
                 return self.rld_cdf(x) - p
             return scp.optimize.fsolve(func, x0)[0]
         
-    def multi_pdf_plot(self, interval=1500):
+    def multi_pdf_plot(self, xmax=1500, ymax=None):
         """Overlay several RLD PDFs.
-
-        Inputs:
-            > interval : time interval over which to plot the RLD PDFs
         """
         self.ax.legend()
         self.ax.set_xlabel("Time [min]")
         self.ax.set_title(f"Evolution of the Residual Life Distribution PDF")
-        self.ax.set_xlim((0,interval))
+        self.ax.set_xlim((0,xmax))
+        if ymax != None:
+            self.ax.set_ylim((0,ymax))
         return self.fig

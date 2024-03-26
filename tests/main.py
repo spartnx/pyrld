@@ -46,7 +46,7 @@ if __name__ == "__main__":
     rld = BayesRLD(phi, mu0, sig0, mu1, sig1, sig, D)
 
     # generate synthetic data
-    time, signal, actual_fail_time, fig = rld.synthetic_data(dt, seed=0, n_extra=5)
+    time, signal, actual_fail_time, fig = rld.synthetic_data(dt, seed=0, n_extra=5, t_plot=None, xmax=160, ymax=0.07)
     n = len(time)
 
     # simulation
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     print(f"   med : {time[N+N2]+round(t_50, 3)}\n")
 
     # Plot several RLDs at different update times
-    rld.multi_pdf_plot(interval=800)
+    rld.multi_pdf_plot(xmax=800, ymax=0.007)
 
     # Show the plots
     plt.show()
